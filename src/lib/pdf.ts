@@ -79,9 +79,9 @@ export async function generateClinicReportPdf(clinic: Clinic) {
   evaluations?.forEach((ev: any) => {
     if (y > 250) { doc.addPage(); y = 20; }
     doc.setFontSize(11);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text(`Paciente: ${ev.patients?.name ?? "-"}`, 14, y); y += 6;
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     const fields = [
       ["Diagnóstico clínico", ev.clinical_diagnosis],
@@ -117,14 +117,14 @@ export async function generateClinicReportPdf(clinic: Clinic) {
   records?.forEach((r: any) => {
     if (y > 260) { doc.addPage(); y = 20; }
     doc.setFontSize(10);
-    doc.setFont(undefined, "bold");
+    doc.setFont("helvetica", "bold");
     doc.text(
       `${r.patients?.name ?? "-"} — Sessão ${r.session_number} (${formatDate(r.session_date)})`,
       14,
       y,
     );
     y += 5;
-    doc.setFont(undefined, "normal");
+    doc.setFont("helvetica", "normal");
     doc.setFontSize(9);
     if (r.pathology) {
       const pl = doc.splitTextToSize(`Patologia: ${r.pathology}`, pageW - 28);

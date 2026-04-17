@@ -35,7 +35,7 @@ function SettingsPage() {
     let logoUrl = clinic.logo_url;
     if (logoFile) {
       const ext = logoFile.name.split(".").pop();
-      const path = `${clinic.owner_id ?? clinic.id}/logo_${Date.now()}.${ext}`;
+      const path = `${clinic.id}/logo_${Date.now()}.${ext}`;
       const { error: upErr } = await supabase.storage
         .from("clinic-logos").upload(path, logoFile, { upsert: true });
       if (upErr) {

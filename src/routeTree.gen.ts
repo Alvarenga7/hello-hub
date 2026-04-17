@@ -11,6 +11,16 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as AppRouteImport } from './routes/app'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AppSettingsRouteImport } from './routes/app.settings'
+import { Route as AppScheduleRouteImport } from './routes/app.schedule'
+import { Route as AppRecordsRouteImport } from './routes/app.records'
+import { Route as AppPatientsRouteImport } from './routes/app.patients'
+import { Route as AppFinanceRouteImport } from './routes/app.finance'
+import { Route as AppEvaluationsRouteImport } from './routes/app.evaluations'
+import { Route as AppDashboardRouteImport } from './routes/app.dashboard'
+import { Route as AppAttendanceRouteImport } from './routes/app.attendance'
+import { Route as AppAttachmentsRouteImport } from './routes/app.attachments'
+import { Route as AppAdminRouteImport } from './routes/app.admin'
 
 const AppRoute = AppRouteImport.update({
   id: '/app',
@@ -22,31 +32,148 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppSettingsRoute = AppSettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppScheduleRoute = AppScheduleRouteImport.update({
+  id: '/schedule',
+  path: '/schedule',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppRecordsRoute = AppRecordsRouteImport.update({
+  id: '/records',
+  path: '/records',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppPatientsRoute = AppPatientsRouteImport.update({
+  id: '/patients',
+  path: '/patients',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppFinanceRoute = AppFinanceRouteImport.update({
+  id: '/finance',
+  path: '/finance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppEvaluationsRoute = AppEvaluationsRouteImport.update({
+  id: '/evaluations',
+  path: '/evaluations',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppDashboardRoute = AppDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAttendanceRoute = AppAttendanceRouteImport.update({
+  id: '/attendance',
+  path: '/attendance',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAttachmentsRoute = AppAttachmentsRouteImport.update({
+  id: '/attachments',
+  path: '/attachments',
+  getParentRoute: () => AppRoute,
+} as any)
+const AppAdminRoute = AppAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
+  getParentRoute: () => AppRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/admin': typeof AppAdminRoute
+  '/app/attachments': typeof AppAttachmentsRoute
+  '/app/attendance': typeof AppAttendanceRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/evaluations': typeof AppEvaluationsRoute
+  '/app/finance': typeof AppFinanceRoute
+  '/app/patients': typeof AppPatientsRoute
+  '/app/records': typeof AppRecordsRoute
+  '/app/schedule': typeof AppScheduleRoute
+  '/app/settings': typeof AppSettingsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/admin': typeof AppAdminRoute
+  '/app/attachments': typeof AppAttachmentsRoute
+  '/app/attendance': typeof AppAttendanceRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/evaluations': typeof AppEvaluationsRoute
+  '/app/finance': typeof AppFinanceRoute
+  '/app/patients': typeof AppPatientsRoute
+  '/app/records': typeof AppRecordsRoute
+  '/app/schedule': typeof AppScheduleRoute
+  '/app/settings': typeof AppSettingsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
-  '/app': typeof AppRoute
+  '/app': typeof AppRouteWithChildren
+  '/app/admin': typeof AppAdminRoute
+  '/app/attachments': typeof AppAttachmentsRoute
+  '/app/attendance': typeof AppAttendanceRoute
+  '/app/dashboard': typeof AppDashboardRoute
+  '/app/evaluations': typeof AppEvaluationsRoute
+  '/app/finance': typeof AppFinanceRoute
+  '/app/patients': typeof AppPatientsRoute
+  '/app/records': typeof AppRecordsRoute
+  '/app/schedule': typeof AppScheduleRoute
+  '/app/settings': typeof AppSettingsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/app'
+  fullPaths:
+    | '/'
+    | '/app'
+    | '/app/admin'
+    | '/app/attachments'
+    | '/app/attendance'
+    | '/app/dashboard'
+    | '/app/evaluations'
+    | '/app/finance'
+    | '/app/patients'
+    | '/app/records'
+    | '/app/schedule'
+    | '/app/settings'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/app'
-  id: '__root__' | '/' | '/app'
+  to:
+    | '/'
+    | '/app'
+    | '/app/admin'
+    | '/app/attachments'
+    | '/app/attendance'
+    | '/app/dashboard'
+    | '/app/evaluations'
+    | '/app/finance'
+    | '/app/patients'
+    | '/app/records'
+    | '/app/schedule'
+    | '/app/settings'
+  id:
+    | '__root__'
+    | '/'
+    | '/app'
+    | '/app/admin'
+    | '/app/attachments'
+    | '/app/attendance'
+    | '/app/dashboard'
+    | '/app/evaluations'
+    | '/app/finance'
+    | '/app/patients'
+    | '/app/records'
+    | '/app/schedule'
+    | '/app/settings'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
-  AppRoute: typeof AppRoute
+  AppRoute: typeof AppRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
@@ -65,12 +192,110 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/app/settings': {
+      id: '/app/settings'
+      path: '/settings'
+      fullPath: '/app/settings'
+      preLoaderRoute: typeof AppSettingsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/schedule': {
+      id: '/app/schedule'
+      path: '/schedule'
+      fullPath: '/app/schedule'
+      preLoaderRoute: typeof AppScheduleRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/records': {
+      id: '/app/records'
+      path: '/records'
+      fullPath: '/app/records'
+      preLoaderRoute: typeof AppRecordsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/patients': {
+      id: '/app/patients'
+      path: '/patients'
+      fullPath: '/app/patients'
+      preLoaderRoute: typeof AppPatientsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/finance': {
+      id: '/app/finance'
+      path: '/finance'
+      fullPath: '/app/finance'
+      preLoaderRoute: typeof AppFinanceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/evaluations': {
+      id: '/app/evaluations'
+      path: '/evaluations'
+      fullPath: '/app/evaluations'
+      preLoaderRoute: typeof AppEvaluationsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/dashboard': {
+      id: '/app/dashboard'
+      path: '/dashboard'
+      fullPath: '/app/dashboard'
+      preLoaderRoute: typeof AppDashboardRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/attendance': {
+      id: '/app/attendance'
+      path: '/attendance'
+      fullPath: '/app/attendance'
+      preLoaderRoute: typeof AppAttendanceRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/attachments': {
+      id: '/app/attachments'
+      path: '/attachments'
+      fullPath: '/app/attachments'
+      preLoaderRoute: typeof AppAttachmentsRouteImport
+      parentRoute: typeof AppRoute
+    }
+    '/app/admin': {
+      id: '/app/admin'
+      path: '/admin'
+      fullPath: '/app/admin'
+      preLoaderRoute: typeof AppAdminRouteImport
+      parentRoute: typeof AppRoute
+    }
   }
 }
 
+interface AppRouteChildren {
+  AppAdminRoute: typeof AppAdminRoute
+  AppAttachmentsRoute: typeof AppAttachmentsRoute
+  AppAttendanceRoute: typeof AppAttendanceRoute
+  AppDashboardRoute: typeof AppDashboardRoute
+  AppEvaluationsRoute: typeof AppEvaluationsRoute
+  AppFinanceRoute: typeof AppFinanceRoute
+  AppPatientsRoute: typeof AppPatientsRoute
+  AppRecordsRoute: typeof AppRecordsRoute
+  AppScheduleRoute: typeof AppScheduleRoute
+  AppSettingsRoute: typeof AppSettingsRoute
+}
+
+const AppRouteChildren: AppRouteChildren = {
+  AppAdminRoute: AppAdminRoute,
+  AppAttachmentsRoute: AppAttachmentsRoute,
+  AppAttendanceRoute: AppAttendanceRoute,
+  AppDashboardRoute: AppDashboardRoute,
+  AppEvaluationsRoute: AppEvaluationsRoute,
+  AppFinanceRoute: AppFinanceRoute,
+  AppPatientsRoute: AppPatientsRoute,
+  AppRecordsRoute: AppRecordsRoute,
+  AppScheduleRoute: AppScheduleRoute,
+  AppSettingsRoute: AppSettingsRoute,
+}
+
+const AppRouteWithChildren = AppRoute._addFileChildren(AppRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
-  AppRoute: AppRoute,
+  AppRoute: AppRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
