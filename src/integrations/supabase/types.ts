@@ -14,6 +14,71 @@ export type Database = {
   }
   public: {
     Tables: {
+      announcement_dismissals: {
+        Row: {
+          announcement_id: string
+          dismissed_at: string
+          id: string
+          user_id: string
+        }
+        Insert: {
+          announcement_id: string
+          dismissed_at?: string
+          id?: string
+          user_id: string
+        }
+        Update: {
+          announcement_id?: string
+          dismissed_at?: string
+          id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "announcement_dismissals_announcement_id_fkey"
+            columns: ["announcement_id"]
+            isOneToOne: false
+            referencedRelation: "announcements"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      announcements: {
+        Row: {
+          active: boolean
+          created_at: string
+          created_by: string
+          expires_at: string | null
+          id: string
+          message: string
+          title: string
+          type: string
+          updated_at: string
+        }
+        Insert: {
+          active?: boolean
+          created_at?: string
+          created_by: string
+          expires_at?: string | null
+          id?: string
+          message: string
+          title: string
+          type?: string
+          updated_at?: string
+        }
+        Update: {
+          active?: boolean
+          created_at?: string
+          created_by?: string
+          expires_at?: string | null
+          id?: string
+          message?: string
+          title?: string
+          type?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       appointments: {
         Row: {
           appointment_date: string
