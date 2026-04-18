@@ -101,16 +101,80 @@ function AdminPage() {
     }
   };
 
+  const createClinic = async () => {
+    if (!newName.trim() || !newEmail.trim() || newPass.length < 6) {
+      toast.error("Preencha nome, e-mail e senha (mín. 6)");
+      return;
+    }
+    setCreating(true);
+    // Salva sessão atual (super admin) para restaurar depois
+    const { data: currentSession } = await supabase.auth.getSession();
+
+    // 1) cria conta da clínica
+    const { data: signUp, error: sErr } = await supabase.auth.signUp({
+      email: newEmail.trim(),
+      password: newPass,
+    });
+    if (sErr && !/already registered/i.test(sErr.message)) {
+      setCreating(false);
+      toast.error("Erro", { description: sErr.message });
+      return;
+    }
+
+    let ownerId = signUp.user?.id;
+    if (!ownerId) {
+      // já existia → tenta obter via signIn
+      const { data: si } = await supabase.auth.signInWithPassword({
+        email: newEmail.trim(),
+        password: newPass,
+      });
+      ownerId = si.user?.id;
+    }
+
+    if (!ownerId) {
+      setCreating(false);
+      toast.error("Não foi possível obter o usuário (verifique e-mail/senha)");
+      return;
+    }
+
+    // 2) insere clínica usando sessão atual (super admin tem permissão via RLS)
+    if (currentSession.session) {
+      await supabase.auth.setSession({
+        access_token: currentSession.session.access_token,
+        refresh_token: currentSession.session.refresh_token,
+      });
+    }
+
+    const { error: cErr } = await supabase.from("clinics").insert({
+      owner_id: ownerId,
+      name: newName.trim(),
+      email: newEmail.trim(),
+    });
+
+    setCreating(false);
+    if (cErr) {
+      toast.error("Erro ao criar clínica", { description: cErr.message });
+      return;
+    }
+    toast.success("Clínica criada!");
+    setNewOpen(false);
+    setNewName(""); setNewEmail(""); setNewPass("");
+    load();
+  };
+
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center gap-3">
         <div className="h-12 w-12 rounded-xl gradient-primary grid place-items-center">
           <Shield className="h-6 w-6 text-primary-foreground" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold">Painel Admin</h1>
           <p className="text-muted-foreground">{list.length} clínica(s) cadastrada(s)</p>
         </div>
+        <Button onClick={() => setNewOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" /> Nova clínica
+        </Button>
       </div>
 
       <div className="grid gap-3">
