@@ -42,7 +42,9 @@ function AuthPage() {
       return;
     }
     toast.success("Bem-vindo!");
-    window.location.href = "/app/dashboard";
+    const dest =
+      email === "henriquehastenreiter@gmail.com" ? "/app/admin" : "/app/dashboard";
+    window.location.href = dest;
   };
 
   const handleSignup = async (e: React.FormEvent) => {
@@ -52,34 +54,46 @@ function AuthPage() {
       return;
     }
     setLoading(true);
-    const { data, error } = await supabase.auth.signUp({
+
+    // 1) Cria conta (auto-confirm está habilitado)
+    const { data: signUpData, error: signUpErr } = await supabase.auth.signUp({
       email: signupEmail,
       password: signupPass,
       options: { emailRedirectTo: `${window.location.origin}/app/dashboard` },
     });
-    if (error) {
+    if (signUpErr && !/already registered/i.test(signUpErr.message)) {
       setLoading(false);
-      toast.error("Erro ao cadastrar", { description: error.message });
-      return;
-    }
-    const userId = data.user?.id;
-
-    // Super admin não cria clínica
-    if (signupEmail === "henriquehastenreiter@gmail.com") {
-      setLoading(false);
-      toast.success("Conta de Super Admin criada! Faça login.");
-      setTab("login");
-      setEmail(signupEmail);
+      toast.error("Erro ao cadastrar", { description: signUpErr.message });
       return;
     }
 
+    // 2) Garante sessão ativa via login (funciona mesmo se já existia)
+    const { data: signInData, error: signInErr } = await supabase.auth.signInWithPassword({
+      email: signupEmail,
+      password: signupPass,
+    });
+    if (signInErr) {
+      setLoading(false);
+      toast.error("Erro ao iniciar sessão", { description: signInErr.message });
+      return;
+    }
+
+    const userId = signInData.user?.id ?? signUpData.user?.id;
     if (!userId) {
       setLoading(false);
       toast.error("Falha ao obter usuário");
       return;
     }
 
-    // upload logo
+    // Super admin não cria clínica
+    if (signupEmail === "henriquehastenreiter@gmail.com") {
+      setLoading(false);
+      toast.success("Super Admin logado!");
+      window.location.href = "/app/admin";
+      return;
+    }
+
+    // 3) Upload logo (opcional)
     let logoUrl: string | null = null;
     if (logoFile) {
       const ext = logoFile.name.split(".").pop();
@@ -93,21 +107,29 @@ function AuthPage() {
       }
     }
 
-    // Aguarda sessão estar disponível (signUp pode logar automaticamente)
-    await supabase.auth.signInWithPassword({ email: signupEmail, password: signupPass });
+    // 4) Cria clínica (idempotente: ignora se já existe)
+    const { data: existing } = await supabase
+      .from("clinics")
+      .select("id")
+      .eq("owner_id", userId)
+      .maybeSingle();
 
-    const { error: cErr } = await supabase.from("clinics").insert({
-      owner_id: userId,
-      name: clinicName,
-      email: signupEmail,
-      logo_url: logoUrl,
-    });
-    setLoading(false);
-    if (cErr) {
-      toast.error("Erro ao criar clínica", { description: cErr.message });
-      return;
+    if (!existing) {
+      const { error: cErr } = await supabase.from("clinics").insert({
+        owner_id: userId,
+        name: clinicName,
+        email: signupEmail,
+        logo_url: logoUrl,
+      });
+      if (cErr) {
+        setLoading(false);
+        toast.error("Erro ao criar clínica", { description: cErr.message });
+        return;
+      }
     }
-    toast.success("Clínica criada com sucesso!");
+
+    setLoading(false);
+    toast.success("Clínica pronta!");
     window.location.href = "/app/dashboard";
   };
 
