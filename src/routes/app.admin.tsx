@@ -241,6 +241,33 @@ function AdminPage() {
           </DialogFooter>
         </DialogContent>
       </Dialog>
+
+      <Dialog open={newOpen} onOpenChange={setNewOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Nova clínica</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Nome da clínica</Label>
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Ex: Clínica Vida" />
+            </div>
+            <div>
+              <Label>E-mail do proprietário</Label>
+              <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="dono@clinica.com" />
+            </div>
+            <div>
+              <Label>Senha inicial (mín. 6)</Label>
+              <Input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} />
+              <p className="text-xs text-muted-foreground mt-1">
+                O proprietário usará esses dados para entrar e poderá trocar depois.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewOpen(false)} disabled={creating}>Cancelar</Button>
+            <Button onClick={createClinic} disabled={creating}>{creating ? "Criando..." : "Criar"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
