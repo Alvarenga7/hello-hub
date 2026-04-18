@@ -15,7 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, FileDown, Shield, Building2 } from "lucide-react";
+import { Pencil, Trash2, FileDown, Shield, Building2, Plus } from "lucide-react";
 import { generateClinicReportPdf } from "@/lib/pdf";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
@@ -40,6 +40,13 @@ function AdminPage() {
   const [editOpen, setEditOpen] = useState(false);
   const [editing, setEditing] = useState<Clinic | null>(null);
   const [editName, setEditName] = useState("");
+
+  // Nova clínica
+  const [newOpen, setNewOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [creating, setCreating] = useState(false);
 
   const load = async () => {
     const { data } = await supabase.from("clinics").select("*").order("created_at", { ascending: false });
@@ -94,16 +101,80 @@ function AdminPage() {
     }
   };
 
+  const createClinic = async () => {
+    if (!newName.trim() || !newEmail.trim() || newPass.length < 6) {
+      toast.error("Preencha nome, e-mail e senha (mín. 6)");
+      return;
+    }
+    setCreating(true);
+    // Salva sessão atual (super admin) para restaurar depois
+    const { data: currentSession } = await supabase.auth.getSession();
+
+    // 1) cria conta da clínica
+    const { data: signUp, error: sErr } = await supabase.auth.signUp({
+      email: newEmail.trim(),
+      password: newPass,
+    });
+    if (sErr && !/already registered/i.test(sErr.message)) {
+      setCreating(false);
+      toast.error("Erro", { description: sErr.message });
+      return;
+    }
+
+    let ownerId = signUp.user?.id;
+    if (!ownerId) {
+      // já existia → tenta obter via signIn
+      const { data: si } = await supabase.auth.signInWithPassword({
+        email: newEmail.trim(),
+        password: newPass,
+      });
+      ownerId = si.user?.id;
+    }
+
+    if (!ownerId) {
+      setCreating(false);
+      toast.error("Não foi possível obter o usuário (verifique e-mail/senha)");
+      return;
+    }
+
+    // 2) insere clínica usando sessão atual (super admin tem permissão via RLS)
+    if (currentSession.session) {
+      await supabase.auth.setSession({
+        access_token: currentSession.session.access_token,
+        refresh_token: currentSession.session.refresh_token,
+      });
+    }
+
+    const { error: cErr } = await supabase.from("clinics").insert({
+      owner_id: ownerId,
+      name: newName.trim(),
+      email: newEmail.trim(),
+    });
+
+    setCreating(false);
+    if (cErr) {
+      toast.error("Erro ao criar clínica", { description: cErr.message });
+      return;
+    }
+    toast.success("Clínica criada!");
+    setNewOpen(false);
+    setNewName(""); setNewEmail(""); setNewPass("");
+    load();
+  };
+
   return (
     <div className="space-y-6 max-w-6xl">
       <div className="flex items-center gap-3">
         <div className="h-12 w-12 rounded-xl gradient-primary grid place-items-center">
           <Shield className="h-6 w-6 text-primary-foreground" />
         </div>
-        <div>
+        <div className="flex-1">
           <h1 className="text-3xl font-bold">Painel Admin</h1>
           <p className="text-muted-foreground">{list.length} clínica(s) cadastrada(s)</p>
         </div>
+        <Button onClick={() => setNewOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" /> Nova clínica
+        </Button>
       </div>
 
       <div className="grid gap-3">
@@ -167,6 +238,33 @@ function AdminPage() {
           <DialogFooter>
             <Button variant="outline" onClick={() => setEditOpen(false)}>Cancelar</Button>
             <Button onClick={saveEdit}>Salvar</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={newOpen} onOpenChange={setNewOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Nova clínica</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Nome da clínica</Label>
+              <Input value={newName} onChange={(e) => setNewName(e.target.value)} placeholder="Ex: Clínica Vida" />
+            </div>
+            <div>
+              <Label>E-mail do proprietário</Label>
+              <Input type="email" value={newEmail} onChange={(e) => setNewEmail(e.target.value)} placeholder="dono@clinica.com" />
+            </div>
+            <div>
+              <Label>Senha inicial (mín. 6)</Label>
+              <Input type="password" value={newPass} onChange={(e) => setNewPass(e.target.value)} />
+              <p className="text-xs text-muted-foreground mt-1">
+                O proprietário usará esses dados para entrar e poderá trocar depois.
+              </p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setNewOpen(false)} disabled={creating}>Cancelar</Button>
+            <Button onClick={createClinic} disabled={creating}>{creating ? "Criando..." : "Criar"}</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
