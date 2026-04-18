@@ -176,61 +176,77 @@ function AdminPage() {
           <h1 className="text-3xl font-bold">Painel Admin</h1>
           <p className="text-muted-foreground">{list.length} clínica(s) cadastrada(s)</p>
         </div>
-        <Button onClick={() => setNewOpen(true)} className="gap-2">
-          <Plus className="h-4 w-4" /> Nova clínica
-        </Button>
       </div>
 
-      <div className="grid gap-3">
-        {list.map((c) => (
-          <Card key={c.id} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
-            {c.logo_url ? (
-              <img src={c.logo_url} alt={c.name} className="h-12 w-12 rounded-lg object-cover" />
-            ) : (
-              <div className="h-12 w-12 rounded-lg bg-accent/40 grid place-items-center">
-                <Building2 className="h-6 w-6 text-primary" />
-              </div>
+      <Tabs defaultValue="clinics">
+        <TabsList>
+          <TabsTrigger value="clinics" className="gap-2"><Building2 className="h-4 w-4" /> Clínicas</TabsTrigger>
+          <TabsTrigger value="announcements" className="gap-2"><Megaphone className="h-4 w-4" /> Avisos</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="clinics" className="space-y-4">
+          <div className="flex justify-end">
+            <Button onClick={() => setNewOpen(true)} className="gap-2">
+              <Plus className="h-4 w-4" /> Nova clínica
+            </Button>
+          </div>
+
+          <div className="grid gap-3">
+            {list.map((c) => (
+              <Card key={c.id} className="p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                {c.logo_url ? (
+                  <img src={c.logo_url} alt={c.name} className="h-12 w-12 rounded-lg object-cover" />
+                ) : (
+                  <div className="h-12 w-12 rounded-lg bg-accent/40 grid place-items-center">
+                    <Building2 className="h-6 w-6 text-primary" />
+                  </div>
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="font-semibold truncate">{c.name}</div>
+                  <div className="text-sm text-muted-foreground truncate">{c.email}</div>
+                  <div className="text-xs text-muted-foreground">Criada em {formatDate(c.created_at)}</div>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Switch checked={c.active} onCheckedChange={() => toggleActive(c)} />
+                  <span className="text-sm text-muted-foreground">{c.active ? "Ativa" : "Inativa"}</span>
+                </div>
+                <div className="flex gap-1">
+                  <Button size="icon" variant="ghost" onClick={() => generatePdf(c)} title="Backup PDF">
+                    <FileDown className="h-4 w-4" />
+                  </Button>
+                  <Button size="icon" variant="ghost" onClick={() => openEdit(c)}>
+                    <Pencil className="h-4 w-4" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button size="icon" variant="ghost"><Trash2 className="h-4 w-4 text-destructive" /></Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>Excluir {c.name}?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          TODOS os dados desta clínica (pacientes, prontuário, financeiro, anexos) serão removidos permanentemente.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction onClick={() => remove(c.id)}>Excluir definitivamente</AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </div>
+              </Card>
+            ))}
+            {list.length === 0 && (
+              <Card className="p-8 text-center text-muted-foreground">Nenhuma clínica cadastrada.</Card>
             )}
-            <div className="flex-1 min-w-0">
-              <div className="font-semibold truncate">{c.name}</div>
-              <div className="text-sm text-muted-foreground truncate">{c.email}</div>
-              <div className="text-xs text-muted-foreground">Criada em {formatDate(c.created_at)}</div>
-            </div>
-            <div className="flex items-center gap-2">
-              <Switch checked={c.active} onCheckedChange={() => toggleActive(c)} />
-              <span className="text-sm text-muted-foreground">{c.active ? "Ativa" : "Inativa"}</span>
-            </div>
-            <div className="flex gap-1">
-              <Button size="icon" variant="ghost" onClick={() => generatePdf(c)} title="Backup PDF">
-                <FileDown className="h-4 w-4" />
-              </Button>
-              <Button size="icon" variant="ghost" onClick={() => openEdit(c)}>
-                <Pencil className="h-4 w-4" />
-              </Button>
-              <AlertDialog>
-                <AlertDialogTrigger asChild>
-                  <Button size="icon" variant="ghost"><Trash2 className="h-4 w-4 text-destructive" /></Button>
-                </AlertDialogTrigger>
-                <AlertDialogContent>
-                  <AlertDialogHeader>
-                    <AlertDialogTitle>Excluir {c.name}?</AlertDialogTitle>
-                    <AlertDialogDescription>
-                      TODOS os dados desta clínica (pacientes, prontuário, financeiro, anexos) serão removidos permanentemente.
-                    </AlertDialogDescription>
-                  </AlertDialogHeader>
-                  <AlertDialogFooter>
-                    <AlertDialogCancel>Cancelar</AlertDialogCancel>
-                    <AlertDialogAction onClick={() => remove(c.id)}>Excluir definitivamente</AlertDialogAction>
-                  </AlertDialogFooter>
-                </AlertDialogContent>
-              </AlertDialog>
-            </div>
-          </Card>
-        ))}
-        {list.length === 0 && (
-          <Card className="p-8 text-center text-muted-foreground">Nenhuma clínica cadastrada.</Card>
-        )}
-      </div>
+          </div>
+        </TabsContent>
+
+        <TabsContent value="announcements">
+          <AnnouncementsManager />
+        </TabsContent>
+      </Tabs>
 
       <Dialog open={editOpen} onOpenChange={setEditOpen}>
         <DialogContent>
