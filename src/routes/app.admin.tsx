@@ -15,7 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { Pencil, Trash2, FileDown, Shield, Building2 } from "lucide-react";
+import { Pencil, Trash2, FileDown, Shield, Building2, Plus } from "lucide-react";
 import { generateClinicReportPdf } from "@/lib/pdf";
 import { toast } from "sonner";
 import { formatDate } from "@/lib/format";
