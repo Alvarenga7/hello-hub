@@ -291,3 +291,149 @@ function AdminPage() {
     </div>
   );
 }
+
+interface Announcement {
+  id: string;
+  title: string;
+  message: string;
+  type: string;
+  expires_at: string | null;
+  active: boolean;
+  created_at: string;
+}
+
+function AnnouncementsManager() {
+  const { user } = useAuth();
+  const [items, setItems] = useState<Announcement[]>([]);
+  const [open, setOpen] = useState(false);
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [type, setType] = useState("info");
+  const [expiresAt, setExpiresAt] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const load = async () => {
+    const { data } = await supabase
+      .from("announcements")
+      .select("*")
+      .order("created_at", { ascending: false });
+    setItems(data ?? []);
+  };
+
+  useEffect(() => { load(); }, []);
+
+  const create = async () => {
+    if (!title.trim() || !message.trim() || !user) {
+      toast.error("Preencha título e mensagem");
+      return;
+    }
+    setSaving(true);
+    const { error } = await supabase.from("announcements").insert({
+      title: title.trim(),
+      message: message.trim(),
+      type,
+      expires_at: expiresAt ? new Date(expiresAt).toISOString() : null,
+      created_by: user.id,
+    });
+    setSaving(false);
+    if (error) { toast.error(error.message); return; }
+    toast.success("Aviso publicado!");
+    setOpen(false);
+    setTitle(""); setMessage(""); setType("info"); setExpiresAt("");
+    load();
+  };
+
+  const toggleActive = async (a: Announcement) => {
+    await supabase.from("announcements").update({ active: !a.active }).eq("id", a.id);
+    load();
+  };
+
+  const remove = async (id: string) => {
+    await supabase.from("announcements").delete().eq("id", id);
+    toast.success("Aviso excluído");
+    load();
+  };
+
+  const isExpired = (a: Announcement) => a.expires_at && new Date(a.expires_at) <= new Date();
+
+  return (
+    <div className="space-y-4">
+      <div className="flex justify-between items-center">
+        <p className="text-sm text-muted-foreground">
+          Crie avisos que aparecerão como banner para todas as clínicas.
+        </p>
+        <Button onClick={() => setOpen(true)} className="gap-2">
+          <Plus className="h-4 w-4" /> Novo aviso
+        </Button>
+      </div>
+
+      <div className="grid gap-3">
+        {items.map((a) => (
+          <Card key={a.id} className="p-4 flex flex-col sm:flex-row sm:items-start gap-3">
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2 flex-wrap">
+                <div className="font-semibold">{a.title}</div>
+                <Badge variant="outline">{a.type}</Badge>
+                {!a.active && <Badge variant="secondary">Inativo</Badge>}
+                {isExpired(a) && <Badge variant="destructive">Expirado</Badge>}
+              </div>
+              <div className="text-sm text-muted-foreground mt-1 whitespace-pre-wrap">{a.message}</div>
+              <div className="text-xs text-muted-foreground mt-2">
+                Criado em {formatDate(a.created_at)}
+                {a.expires_at && ` · Expira em ${formatDate(a.expires_at)}`}
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <Switch checked={a.active} onCheckedChange={() => toggleActive(a)} />
+              <Button size="icon" variant="ghost" onClick={() => remove(a.id)}>
+                <Trash2 className="h-4 w-4 text-destructive" />
+              </Button>
+            </div>
+          </Card>
+        ))}
+        {items.length === 0 && (
+          <Card className="p-8 text-center text-muted-foreground">Nenhum aviso criado.</Card>
+        )}
+      </div>
+
+      <Dialog open={open} onOpenChange={setOpen}>
+        <DialogContent>
+          <DialogHeader><DialogTitle>Novo aviso</DialogTitle></DialogHeader>
+          <div className="space-y-3">
+            <div>
+              <Label>Título</Label>
+              <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Ex: Nova funcionalidade!" />
+            </div>
+            <div>
+              <Label>Mensagem</Label>
+              <Textarea value={message} onChange={(e) => setMessage(e.target.value)} rows={4} placeholder="Descreva a novidade..." />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Tipo</Label>
+                <Select value={type} onValueChange={setType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="info">Informação</SelectItem>
+                    <SelectItem value="sucesso">Sucesso</SelectItem>
+                    <SelectItem value="aviso">Aviso</SelectItem>
+                    <SelectItem value="alerta">Alerta</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Expira em (opcional)</Label>
+                <Input type="datetime-local" value={expiresAt} onChange={(e) => setExpiresAt(e.target.value)} />
+              </div>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setOpen(false)} disabled={saving}>Cancelar</Button>
+            <Button onClick={create} disabled={saving}>{saving ? "Publicando..." : "Publicar"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
+
