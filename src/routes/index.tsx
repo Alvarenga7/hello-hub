@@ -42,7 +42,9 @@ function AuthPage() {
       return;
     }
     toast.success("Bem-vindo!");
-    window.location.href = "/app/dashboard";
+    const dest =
+      email === "henriquehastenreiter@gmail.com" ? "/app/admin" : "/app/dashboard";
+    window.location.href = dest;
   };
 
   const handleSignup = async (e: React.FormEvent) => {
