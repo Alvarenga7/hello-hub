@@ -19,6 +19,7 @@ import {
   X,
 } from "lucide-react";
 import { useState } from "react";
+import { AnnouncementsBanner } from "@/components/AnnouncementsBanner";
 
 export const Route = createFileRoute("/app")({
   beforeLoad: async () => {
@@ -185,6 +186,7 @@ function AppLayout() {
           <span className="font-semibold truncate">{displayName}</span>
         </header>
         <main className="flex-1 p-4 lg:p-8 overflow-x-hidden">
+          <AnnouncementsBanner />
           <Outlet />
         </main>
       </div>
