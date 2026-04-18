@@ -41,6 +41,13 @@ function AdminPage() {
   const [editing, setEditing] = useState<Clinic | null>(null);
   const [editName, setEditName] = useState("");
 
+  // Nova clínica
+  const [newOpen, setNewOpen] = useState(false);
+  const [newName, setNewName] = useState("");
+  const [newEmail, setNewEmail] = useState("");
+  const [newPass, setNewPass] = useState("");
+  const [creating, setCreating] = useState(false);
+
   const load = async () => {
     const { data } = await supabase.from("clinics").select("*").order("created_at", { ascending: false });
     setList(data ?? []);
